@@ -1103,6 +1103,17 @@ class MessageBuilder:
                 code=code,
             )
 
+        for item in overload.items:
+            if len(item.arg_types) == len(arg_types):
+                for i, expected_arg in enumerate(item.arg_types):
+                    if expected_arg != arg_types[i]:
+                        arg = arg_types[i]
+                        if (
+                            isinstance(expected_arg, Instance)
+                            and expected_arg.type.is_protocol
+                            and isinstance(arg, (CallableType, Instance, TupleType, TypedDictType))
+                        ):
+                            self.report_protocol_problems(arg, expected_arg, context, code=code)
         self.note(f"Possible overload variant{plural_s(len(overload.items))}:", context, code=code)
         for item in overload.items:
             self.note(pretty_callable(item, self.options), context, offset=4, code=code)
